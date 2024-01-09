@@ -4,15 +4,13 @@ from torch.nn import functional as F
 import pickle
 import music21
 import os
+import random
 
-
-dir_list = os.listdir("./data")
-print (dir_list)
 
 
 # hyperparameters
 batch_size = 32 # how many independent sequences will we process in parallel? 64
-block_size = 16 # what is the maximum context length for predictions? 256
+block_size = 64 # what is the maximum context length for predictions? 256
 max_iters = 5000
 eval_interval = 500
 learning_rate = 3e-4
@@ -21,24 +19,39 @@ eval_iters = 200
 n_embd = 384
 n_head = 6
 n_layer = 6
-dropout = 0.2
+dropout = 0.2 # initially .2
 # ------------
 
+
 torch.manual_seed(1337)
+random.seed(1337)
 
-# wget https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt
+dir_list = os.listdir("./data")
 
-midifiles = ['./data/bwv988tuples', './data/inventiontuples']
+random.seed(10)
+random.shuffle(dir_list)
 
 allNotes = []
 
-for midi in midifiles:
-    with open(midi, 'rb') as f:
-        songNotes = pickle.load(f)
-        allNotes = allNotes + songNotes
+for filename in dir_list:
+    f = open(f'./data/{filename}', 'rb')
+    songNotes = pickle.load(f)
+    allNotes += songNotes
     f.close
 
-print (len(allNotes))
+# wget https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt
+
+# midifiles = ['./data/bwv988tuples', './data/inventiontuples']
+
+# allNotes = []
+
+# for midi in midifiles:
+#     with open(midi, 'rb') as f:
+#         songNotes = pickle.load(f)
+#         allNotes = allNotes + songNotes
+#     f.close
+
+print ("Total number of tuples: ", len(allNotes))
 
 
 # with open('./data/bwv988tuples', 'rb') as f:
@@ -249,6 +262,6 @@ for iter in range(max_iters):
 context = torch.zeros((1, 1), dtype=torch.long, device=device)
 newsong = decode(m.generate(context, max_new_tokens=500)[0].tolist())
 #open('more.txt', 'w').write(decode(m.generate(context, max_new_tokens=10000)[0].tolist()))
-with open('./output/gpt2', 'wb') as f:
+with open('./output/gpt5', 'wb') as f:
     pickle.dump(newsong, f)
 f.close
