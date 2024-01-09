@@ -1,7 +1,7 @@
 import music21
 import pickle
 
-with open('./output/gpt5', 'rb') as fp:
+with open('./output/gpt9', 'rb') as fp:
     notes = pickle.load(fp)
 fp.close
 
