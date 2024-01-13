@@ -10,16 +10,18 @@ import random
 
 # hyperparameters
 batch_size = 64 # how many independent sequences will we process in parallel? 64
-block_size = 64 # what is the maximum context length for predictions? 256
+block_size = 128 # what is the maximum context length for predictions? 256
 max_iters = 5000
 eval_interval = 500
-learning_rate = 1e-3 #3e-4
+learning_rate = 5e-4 #3e-4
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 eval_iters = 200
-n_embd = 32 # 384
+n_embd = 128 # 384
 n_head = 6
 n_layer = 6 # 6
 dropout = 0.2 # initially .2
+temp = .7
+topk = 6
 # ------------
 
 
@@ -227,8 +229,8 @@ class GPTLanguageModel(nn.Module):
             # focus only on the last time step
             logits = logits[:, -1, :] # becomes (B, C)
             # Stuff from nanogpt, temperature and topk
-            logits = logits / .8 # scale by temperature
-            v, _ = torch.topk(logits, min(8, logits.size(-1)))
+            logits = logits / temp # scale by temperature
+            v, _ = torch.topk(logits, min(topk, logits.size(-1)))
             logits[logits < v[:, [-1]]] = -float('Inf')
             # Stuff from nanogpt
             # apply softmax to get probabilities
@@ -267,6 +269,6 @@ for iter in range(max_iters):
 context = torch.zeros((1, 1), dtype=torch.long, device=device)
 newsong = decode(m.generate(context, max_new_tokens=500)[0].tolist())
 #open('more.txt', 'w').write(decode(m.generate(context, max_new_tokens=10000)[0].tolist()))
-with open('./output/gpt10', 'wb') as f:
+with open('./output/gpt11', 'wb') as f:
     pickle.dump(newsong, f)
 f.close
